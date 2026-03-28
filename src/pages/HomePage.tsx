@@ -9,14 +9,7 @@ import { products, reviews, blogPosts, comparisons, getProductById, getReviewByP
 import { useState } from "react";
 import { toast } from "sonner";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-};
-
-const stagger = {
-  visible: { transition: { staggerChildren: 0.1 } },
-};
+import { fadeUp, stagger } from "@/lib/animations";
 
 export default function HomePage() {
   const [email, setEmail] = useState("");

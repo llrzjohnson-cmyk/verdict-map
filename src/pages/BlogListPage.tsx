@@ -3,7 +3,7 @@ import { BlogPostCard } from "@/components/BlogPostCard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { blogPosts } from "@/data/sample-data";
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+import { fadeUp } from "@/lib/animations";
 
 export default function BlogListPage() {
   const published = blogPosts.filter((p) => p.status === "published");

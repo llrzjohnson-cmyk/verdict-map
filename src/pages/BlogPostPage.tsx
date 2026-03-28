@@ -6,7 +6,7 @@ import { SocialShare } from "@/components/SocialShare";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { getBlogPostBySlug, getAuthorById, getCategoryById, blogPosts } from "@/data/sample-data";
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+import { fadeUp } from "@/lib/animations";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();

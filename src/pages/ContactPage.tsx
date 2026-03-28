@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Mail, MapPin } from "lucide-react";
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+import { fadeUp } from "@/lib/animations";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });

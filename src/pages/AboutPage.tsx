@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Shield, Target, Users } from "lucide-react";
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+import { fadeUp } from "@/lib/animations";
 
 export default function AboutPage() {
   return (

@@ -10,7 +10,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { getReviewBySlug, getProductById, getAuthorById, getCategoryById, reviews, products, getReviewByProductId } from "@/data/sample-data";
 import { useState } from "react";
 
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+import { fadeUp } from "@/lib/animations";
 
 export default function ReviewPage() {
   const { slug } = useParams<{ slug: string }>();
