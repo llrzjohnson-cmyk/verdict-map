@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Clock, User } from "lucide-react";
-import type { BlogPost } from "@/data/sample-data";
-import { getAuthorById, getCategoryById } from "@/data/sample-data";
+import { useAuthorById, useCategoryById } from "@/hooks/use-supabase-data";
+import type { BlogPost } from "@/hooks/use-supabase-data";
 
 interface BlogPostCardProps {
   post: BlogPost;
@@ -9,8 +9,8 @@ interface BlogPostCardProps {
 }
 
 export function BlogPostCard({ post, variant = "default" }: BlogPostCardProps) {
-  const author = getAuthorById(post.author_id);
-  const category = getCategoryById(post.category_id);
+  const { data: author } = useAuthorById(post.author_id);
+  const { data: category } = useCategoryById(post.category_id);
 
   if (variant === "horizontal") {
     return (

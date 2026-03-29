@@ -7,15 +7,24 @@ import { ReviewScoreBar } from "@/components/ReviewScoreBar";
 import { AffiliateButton } from "@/components/AffiliateButton";
 import { SocialShare } from "@/components/SocialShare";
 import { ProductCard } from "@/components/ProductCard";
-import { getReviewBySlug, getProductById, getAuthorById, getCategoryById, reviews, products, getReviewByProductId } from "@/data/sample-data";
+import { useReviewBySlug, useProductById, useAuthorById, useCategoryById, useReviews, useProducts } from "@/hooks/use-supabase-data";
 import { useState } from "react";
 
 import { fadeUp } from "@/lib/animations";
 
 export default function ReviewPage() {
   const { slug } = useParams<{ slug: string }>();
-  const review = getReviewBySlug(slug || "");
+  const { data: review, isLoading } = useReviewBySlug(slug || "");
+  const { data: product } = useProductById(review?.product_id || "");
+  const { data: author } = useAuthorById(review?.author_id ?? null);
+  const { data: category } = useCategoryById(product?.category_id ?? null);
+  const { data: reviews = [] } = useReviews();
+  const { data: products = [] } = useProducts();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  if (isLoading) {
+    return <div className="editorial-container py-20 text-center"><p className="text-muted-foreground">Loading...</p></div>;
+  }
 
   if (!review) {
     return (
@@ -28,12 +37,12 @@ export default function ReviewPage() {
     );
   }
 
-  const product = getProductById(review.product_id)!;
-  const author = getAuthorById(review.author_id);
-  const category = getCategoryById(product.category_id);
+  if (!product) return null;
+
+  const specs = (product.specs && typeof product.specs === 'object' && !Array.isArray(product.specs)) ? product.specs as Record<string, string> : {};
 
   const relatedReviews = reviews
-    .filter((r) => r.id !== review.id && r.status === "published")
+    .filter((r) => r.id !== review.id)
     .slice(0, 3);
 
   return (
@@ -190,15 +199,14 @@ export default function ReviewPage() {
 
             {/* Sidebar */}
             <aside className="space-y-8">
-              {/* Specs */}
               <div className="sticky top-20 space-y-8">
                 <div className="rounded-xl border border-border bg-card p-6">
                   <h3 className="font-serif text-lg font-bold mb-4">Specifications</h3>
                   <dl className="space-y-3">
-                    {Object.entries(product.specs).map(([key, value]) => (
+                    {Object.entries(specs).map(([key, value]) => (
                       <div key={key} className="flex justify-between text-sm">
                         <dt className="text-muted-foreground">{key}</dt>
-                        <dd className="font-medium text-foreground text-right">{value}</dd>
+                        <dd className="font-medium text-foreground text-right">{String(value)}</dd>
                       </div>
                     ))}
                   </dl>
@@ -207,7 +215,6 @@ export default function ReviewPage() {
                   </div>
                 </div>
 
-                {/* Affiliate disclosure */}
                 <div className="rounded-lg bg-muted/50 p-4 text-xs text-muted-foreground">
                   <strong className="text-foreground">Affiliate Disclosure:</strong> We may earn a commission through links on this page, at no extra cost to you. This helps fund our independent testing and editorial work.{" "}
                   <Link to="/affiliate-disclosure" className="text-primary hover:underline">Learn more</Link>
@@ -225,7 +232,7 @@ export default function ReviewPage() {
             <h2 className="font-serif text-2xl font-bold text-foreground mb-8">More Reviews</h2>
             <div className="grid md:grid-cols-3 gap-6">
               {relatedReviews.map((r) => {
-                const p = getProductById(r.product_id);
+                const p = products.find(prod => prod.id === r.product_id);
                 return p ? <ProductCard key={r.id} product={p} review={r} /> : null;
               })}
             </div>

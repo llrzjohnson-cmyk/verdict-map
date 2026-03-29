@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { RatingStars } from "@/components/RatingStars";
 import { Button } from "@/components/ui/button";
-import { products, reviews, blogPosts, comparisons, getProductById, getReviewByProductId } from "@/data/sample-data";
+import { useProducts, useReviews, useBlogPosts, useComparisons } from "@/hooks/use-supabase-data";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -13,8 +13,17 @@ import { fadeUp, stagger } from "@/lib/animations";
 
 export default function HomePage() {
   const [email, setEmail] = useState("");
+  const { data: products = [] } = useProducts();
+  const { data: reviews = [] } = useReviews();
+  const { data: blogPosts = [] } = useBlogPosts();
+  const { data: comparisons = [] } = useComparisons();
+
   const featuredReview = reviews[0];
-  const featuredProduct = getProductById(featuredReview.product_id)!;
+  const featuredProduct = featuredReview ? products.find(p => p.id === featuredReview.product_id) : undefined;
+
+  if (!featuredReview || !featuredProduct) {
+    return <main className="editorial-container py-20 text-center"><p className="text-muted-foreground">Loading...</p></main>;
+  }
 
   return (
     <main>
@@ -82,7 +91,7 @@ export default function HomePage() {
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.slice(0, 3).map((product) => {
-              const review = getReviewByProductId(product.id);
+              const review = reviews.find(r => r.product_id === product.id);
               return (
                 <motion.div key={product.id} variants={fadeUp}>
                   <ProductCard product={product} review={review} />
@@ -110,8 +119,8 @@ export default function HomePage() {
             </motion.div>
             <div className="grid md:grid-cols-2 gap-6">
               {comparisons.map((comp) => {
-                const prods = comp.product_ids.map(getProductById).filter(Boolean) as typeof products;
-                const winner = getProductById(comp.winner_id);
+                const prods = comp.product_ids.map(id => products.find(p => p.id === id)).filter(Boolean);
+                const winner = products.find(p => p.id === comp.winner_id);
                 return (
                   <motion.div key={comp.id} variants={fadeUp}>
                     <Link
@@ -120,11 +129,11 @@ export default function HomePage() {
                     >
                       <div className="flex items-center gap-4 mb-4">
                         {prods.map((p, i) => (
-                          <div key={p.id} className="flex items-center gap-2">
+                          <div key={p!.id} className="flex items-center gap-2">
                             <div className="h-12 w-12 rounded-lg overflow-hidden border border-border">
-                              <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" />
+                              <img src={p!.images[0]} alt={p!.name} className="h-full w-full object-cover" />
                             </div>
-                            <span className="text-sm font-medium text-foreground">{p.name}</span>
+                            <span className="text-sm font-medium text-foreground">{p!.name}</span>
                             {i < prods.length - 1 && <span className="text-muted-foreground font-bold mx-2">vs</span>}
                           </div>
                         ))}

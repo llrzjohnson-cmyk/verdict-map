@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { RatingStars } from "./RatingStars";
 import { AffiliateButton } from "./AffiliateButton";
-import type { Product, Review } from "@/data/sample-data";
-import { getCategoryById } from "@/data/sample-data";
+import { useCategoryById } from "@/hooks/use-supabase-data";
+import type { Product, Review } from "@/hooks/use-supabase-data";
 
 interface ProductCardProps {
   product: Product;
@@ -10,7 +10,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, review }: ProductCardProps) {
-  const category = getCategoryById(product.category_id);
+  const { data: category } = useCategoryById(product.category_id);
 
   return (
     <article className="group rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">

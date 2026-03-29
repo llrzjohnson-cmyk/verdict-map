@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { GitCompare, Star, X } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
-import { products, comparisons, getProductById } from "@/data/sample-data";
+import { useProducts, useComparisons } from "@/hooks/use-supabase-data";
 import { useState } from "react";
 
 import { fadeUp } from "@/lib/animations";
@@ -11,6 +11,8 @@ import { fadeUp } from "@/lib/animations";
 export default function ComparePage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const { data: products = [] } = useProducts();
+  const { data: comparisons = [] } = useComparisons();
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase())
@@ -77,7 +79,7 @@ export default function ComparePage() {
           <h2 className="font-serif text-2xl font-bold text-foreground mb-6">Popular Comparisons</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {comparisons.map((comp) => {
-              const prods = comp.product_ids.map(getProductById).filter(Boolean);
+              const prods = comp.product_ids.map(id => products.find(p => p.id === id)).filter(Boolean);
               return (
                 <Link
                   key={comp.id}
@@ -106,7 +108,7 @@ export default function ComparePage() {
           <div className="editorial-container py-4 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 overflow-x-auto">
               {selected.map((id) => {
-                const p = getProductById(id);
+                const p = products.find(prod => prod.id === id);
                 return p ? (
                   <div key={id} className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 shrink-0">
                     <img src={p.images[0]} alt={p.name} className="h-8 w-8 rounded object-cover" />

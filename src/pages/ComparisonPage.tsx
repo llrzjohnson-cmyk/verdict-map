@@ -6,13 +6,19 @@ import { ReviewScoreBar } from "@/components/ReviewScoreBar";
 import { RatingStars } from "@/components/RatingStars";
 import { AffiliateButton } from "@/components/AffiliateButton";
 import { SocialShare } from "@/components/SocialShare";
-import { getComparisonBySlug, getProductById, getReviewByProductId } from "@/data/sample-data";
+import { useComparisonBySlug, useProducts, useReviews } from "@/hooks/use-supabase-data";
 
 import { fadeUp } from "@/lib/animations";
 
 export default function ComparisonPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comparison = getComparisonBySlug(slug || "");
+  const { data: comparison, isLoading } = useComparisonBySlug(slug || "");
+  const { data: products = [] } = useProducts();
+  const { data: reviews = [] } = useReviews();
+
+  if (isLoading) {
+    return <div className="editorial-container py-20 text-center"><p className="text-muted-foreground">Loading...</p></div>;
+  }
 
   if (!comparison) {
     return (
@@ -23,13 +29,16 @@ export default function ComparisonPage() {
     );
   }
 
-  const compProducts = comparison.product_ids.map(getProductById).filter(Boolean)!;
-  const compReviews = compProducts.map((p) => p && getReviewByProductId(p.id));
-  const winner = getProductById(comparison.winner_id);
+  const compProducts = comparison.product_ids.map(id => products.find(p => p.id === id)).filter(Boolean)!;
+  const compReviews = compProducts.map((p) => p && reviews.find(r => r.product_id === p.id));
+  const winner = products.find(p => p.id === comparison.winner_id);
 
   // Collect all spec keys
   const allSpecKeys = Array.from(
-    new Set(compProducts.flatMap((p) => (p ? Object.keys(p.specs) : [])))
+    new Set(compProducts.flatMap((p) => {
+      const specs = (p?.specs && typeof p.specs === 'object' && !Array.isArray(p.specs)) ? p.specs as Record<string, string> : {};
+      return Object.keys(specs);
+    }))
   );
 
   // Collect all score labels
@@ -84,7 +93,7 @@ export default function ComparisonPage() {
                   <h3 className="font-serif text-lg font-bold">{product.name}</h3>
                   <div className="text-sm text-muted-foreground">{product.brand}</div>
                   {review && <RatingStars rating={review.overall_score} size="sm" />}
-                  <div className="text-xl font-bold text-foreground">${product.price.toFixed(2)}</div>
+                  <div className="text-xl font-bold text-foreground">${Number(product.price).toFixed(2)}</div>
                   <AffiliateButton url={product.affiliate_url} label="Buy Now" size="sm" fullWidth />
                 </div>
               );
@@ -133,7 +142,10 @@ export default function ComparisonPage() {
                 </thead>
                 <tbody>
                   {allSpecKeys.map((key, i) => {
-                    const values = compProducts.map((p) => p?.specs[key] || "—");
+                    const values = compProducts.map((p) => {
+                      const specs = (p?.specs && typeof p.specs === 'object' && !Array.isArray(p.specs)) ? p.specs as Record<string, string> : {};
+                      return specs[key] || "—";
+                    });
                     return (
                       <tr key={key} className={i % 2 === 0 ? "" : "bg-muted/30"}>
                         <td className="p-4 font-medium text-muted-foreground sticky left-0 bg-inherit">{key}</td>
@@ -146,7 +158,7 @@ export default function ComparisonPage() {
                   <tr className="border-t border-border">
                     <td className="p-4 font-medium text-muted-foreground sticky left-0">Price</td>
                     {compProducts.map((p) => (
-                      <td key={p?.id} className="p-4 font-bold text-foreground">${p?.price.toFixed(2)}</td>
+                      <td key={p?.id} className="p-4 font-bold text-foreground">${Number(p?.price).toFixed(2)}</td>
                     ))}
                   </tr>
                 </tbody>
