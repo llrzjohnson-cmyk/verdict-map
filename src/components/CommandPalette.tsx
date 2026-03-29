@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { reviews, blogPosts, products } from "@/data/sample-data";
+import { useReviews, useBlogPosts } from "@/hooks/use-supabase-data";
 import { FileText, Search, Star, GitCompare } from "lucide-react";
 
 interface CommandPaletteProps {
@@ -10,6 +10,8 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const navigate = useNavigate();
+  const { data: reviews = [] } = useReviews();
+  const { data: blogPosts = [] } = useBlogPosts();
 
   const go = (path: string) => {
     navigate(path);
@@ -22,7 +24,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Reviews">
-          {reviews.filter(r => r.status === "published").map((r) => (
+          {reviews.map((r) => (
             <CommandItem key={r.id} onSelect={() => go(`/reviews/${r.slug}`)}>
               <Star className="mr-2 h-4 w-4 text-primary" />
               {r.title}
@@ -30,7 +32,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           ))}
         </CommandGroup>
         <CommandGroup heading="Blog Posts">
-          {blogPosts.filter(b => b.status === "published").map((b) => (
+          {blogPosts.map((b) => (
             <CommandItem key={b.id} onSelect={() => go(`/blog/${b.slug}`)}>
               <FileText className="mr-2 h-4 w-4 text-primary" />
               {b.title}

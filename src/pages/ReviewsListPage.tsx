@@ -1,14 +1,16 @@
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ProductCard } from "@/components/ProductCard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { products, reviews, getReviewByProductId, categories, getCategoryById } from "@/data/sample-data";
+import { useProducts, useReviews, useCategories } from "@/hooks/use-supabase-data";
 import { useState } from "react";
 
 import { fadeUp } from "@/lib/animations";
 
 export default function ReviewsListPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { data: products = [] } = useProducts();
+  const { data: reviews = [] } = useReviews();
+  const { data: categories = [] } = useCategories();
 
   const filteredProducts = selectedCategory
     ? products.filter((p) => p.category_id === selectedCategory)
@@ -48,7 +50,7 @@ export default function ReviewsListPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => {
-            const review = getReviewByProductId(product.id);
+            const review = reviews.find(r => r.product_id === product.id);
             return (
               <motion.div key={product.id} variants={fadeUp}>
                 <ProductCard product={product} review={review} />

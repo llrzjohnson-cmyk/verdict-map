@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { blogPosts } from "@/data/sample-data";
+import { useBlogPosts } from "@/hooks/use-supabase-data";
 
 import { fadeUp } from "@/lib/animations";
 
 export default function BlogListPage() {
-  const published = blogPosts.filter((p) => p.status === "published");
+  const { data: blogPosts = [] } = useBlogPosts();
 
   return (
     <main className="editorial-container py-8">
@@ -18,14 +18,14 @@ export default function BlogListPage() {
         </motion.div>
 
         {/* Featured post */}
-        {published[0] && (
+        {blogPosts[0] && (
           <motion.div variants={fadeUp} className="mb-10">
-            <BlogPostCard post={published[0]} variant="horizontal" />
+            <BlogPostCard post={blogPosts[0]} variant="horizontal" />
           </motion.div>
         )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {published.slice(1).map((post) => (
+          {blogPosts.slice(1).map((post) => (
             <motion.div key={post.id} variants={fadeUp}>
               <BlogPostCard post={post} />
             </motion.div>

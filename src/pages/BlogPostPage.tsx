@@ -1,16 +1,23 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarDays, Clock, User } from "lucide-react";
+import { CalendarDays, Clock } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SocialShare } from "@/components/SocialShare";
 import { BlogPostCard } from "@/components/BlogPostCard";
-import { getBlogPostBySlug, getAuthorById, getCategoryById, blogPosts } from "@/data/sample-data";
+import { useBlogPostBySlug, useAuthorById, useCategoryById, useBlogPosts } from "@/hooks/use-supabase-data";
 
 import { fadeUp } from "@/lib/animations";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const post = getBlogPostBySlug(slug || "");
+  const { data: post, isLoading } = useBlogPostBySlug(slug || "");
+  const { data: author } = useAuthorById(post?.author_id ?? null);
+  const { data: category } = useCategoryById(post?.category_id ?? null);
+  const { data: blogPosts = [] } = useBlogPosts();
+
+  if (isLoading) {
+    return <div className="editorial-container py-20 text-center"><p className="text-muted-foreground">Loading...</p></div>;
+  }
 
   if (!post) {
     return (
@@ -21,9 +28,7 @@ export default function BlogPostPage() {
     );
   }
 
-  const author = getAuthorById(post.author_id);
-  const category = getCategoryById(post.category_id);
-  const related = blogPosts.filter((p) => p.id !== post.id && p.status === "published").slice(0, 3);
+  const related = blogPosts.filter((p) => p.id !== post.id).slice(0, 3);
 
   return (
     <main>
@@ -58,10 +63,12 @@ export default function BlogPostPage() {
                       </div>
                     </div>
                   )}
-                  <span className="flex items-center gap-1">
-                    <CalendarDays className="h-4 w-4" />
-                    {new Date(post.published_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                  </span>
+                  {post.published_at && (
+                    <span className="flex items-center gap-1">
+                      <CalendarDays className="h-4 w-4" />
+                      {new Date(post.published_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1">
                     <Clock className="h-4 w-4" /> {post.reading_time} min read
                   </span>
